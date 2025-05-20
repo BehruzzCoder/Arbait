@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Level" ALTER COLUMN "name_ru" DROP NOT NULL,
+ALTER COLUMN "name_en" DROP NOT NULL;

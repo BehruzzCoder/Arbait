@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Region" ALTER COLUMN "name_uz" DROP NOT NULL,
+ALTER COLUMN "name_ru" DROP NOT NULL,
+ALTER COLUMN "name_en" DROP NOT NULL;

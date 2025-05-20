@@ -1,0 +1,180 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  FullName  String
+  phone     String    @unique
+  email     String    @unique
+  password  String
+  role      UserRole  @default(USER_FIZ)
+  Sessions  Session[]
+  region_id Int
+  region    Region    @relation(fields: [region_id], references: [id], onDelete: Cascade)
+  isActive  Boolean   @default(false)
+  // Orders    Order[]
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  VIEWER_ADMIN
+  USER_FIZ
+  USER_YUR
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id   Int
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([user_id])
+}
+
+model Region {
+  id      Int     @id @default(autoincrement())
+  name_uz String? @unique
+  name_ru String? @unique
+  name_en String? @unique
+  User    User[]
+}
+
+// model Product {
+//   id              Int     @id @default(autoincrement())
+//   name_uz         String
+//   name_ru         String
+//   name_en         String
+//   isActive        Boolean @default(true)
+//   image           String
+//   minWorkingPrice Int
+//   levels          Int
+//   price_hourly    Int
+//   price_daily     Int
+//   tools           String
+// }
+
+// model Level {
+//   id      Int    @id @default(autoincrement())
+//   name_uz String
+//   name_ru String
+//   name_en String
+
+//   Master Master[]
+// }
+
+// model Master {
+//   id              Int     @id @default(autoincrement())
+//   fullName        String
+//   phone           String  @unique
+//   isActive        Boolean @default(true)
+//   year            Int
+//   minWorkingHours Int
+//   level_id        Int
+//   level           Level   @relation(fields: [level_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+//   price_hourly    Int
+//   price_daily     Int
+//   experience      Int
+//   tools           String
+//   image           String
+//   passportImage   String
+//   star            Int
+//   about           String
+// }
+
+// model Order {
+//   id                Int         @id @default(autoincrement())
+//   Product           String
+//   tools             Boolean
+//   total             Int
+//   location          String
+//   address           String
+//   date              DateTime
+//   paymentType       paymentType
+//   withDelivery      String
+//   status            String
+//   commentToDelivery String
+//   CreatedAt         DateTime    @default(now())
+//   user_id           Int
+//   user              User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+// }
+
+// enum paymentType {
+//   CASH
+//   CARD
+// }
+
+model Level {
+  id      Int     @id @default(autoincrement())
+  name_uz String
+  name_ru String?
+  name_en String?
+}
+
+model Capacity {
+  id      Int     @id @default(autoincrement())
+  name_uz String
+  name_ru String?
+  name_en String?
+}
+
+model Size {
+  id      Int     @id @default(autoincrement())
+  name_uz String
+  name_ru String?
+  name_en String?
+}
+
+model GeneralInfo {
+  id     Int    @id @default(autoincrement())
+  email  String
+  links  String
+  phones String
+}
+
+model Contact {
+  id      Int    @id @default(autoincrement())
+  name    String
+  surName String
+  phone   String
+  adress  String
+  message String
+}
+
+model FAQ{
+  id     Int    @id @default(autoincrement())
+  question String
+  answer   String
+}
+
+model Showcase{
+  id Int @id @default(autoincrement())
+  name_uz String
+  name_ru String?
+  name_en String?
+  image String
+  link String
+}
+
+model Partners{
+  id Int @id @default(autoincrement())
+  name_uz String
+  name_ru String?
+  name_en String?
+  image String
+}

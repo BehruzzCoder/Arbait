@@ -13,9 +13,11 @@ import { ContactModule } from './contact/contact.module';
 import { FaqModule } from './faq/faq.module';
 import { ShowcaseModule } from './showcase/showcase.module';
 import { PartnersModule } from './partners/partners.module';
+import { MasterModule } from './master/master.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
-  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule],
+  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule],
   controllers: [AppController],
   providers: [AppService],
 })

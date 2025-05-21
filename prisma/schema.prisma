@@ -54,76 +54,45 @@ model Region {
   User    User[]
 }
 
-// model Product {
-//   id              Int     @id @default(autoincrement())
-//   name_uz         String
-//   name_ru         String
-//   name_en         String
-//   isActive        Boolean @default(true)
-//   image           String
-//   minWorkingPrice Int
-//   levels          Int
-//   price_hourly    Int
-//   price_daily     Int
-//   tools           String
-// }
+model Product {
+  id              Int         @id @default(autoincrement())
+  name_uz         String
+  name_ru         String
+  name_en         String
+  isActive        Boolean     @default(true)
+  image           String
+  minWorkingPrice Int
+  level_id        Int
+  level           Level       @relation(fields: [level_id], references: [id], onDelete: Cascade)
+  price_hourly    Int
+  price_daily     Int
+  tools           Boolean     @default(false)
+  orderItems      OrderItem[]
+}
 
-// model Level {
-//   id      Int    @id @default(autoincrement())
-//   name_uz String
-//   name_ru String
-//   name_en String
 
-//   Master Master[]
-// }
+model Order {
+  id         Int         @id @default(autoincrement())
+  orderItems OrderItem[]
+}
 
-// model Master {
-//   id              Int     @id @default(autoincrement())
-//   fullName        String
-//   phone           String  @unique
-//   isActive        Boolean @default(true)
-//   year            Int
-//   minWorkingHours Int
-//   level_id        Int
-//   level           Level   @relation(fields: [level_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
-//   price_hourly    Int
-//   price_daily     Int
-//   experience      Int
-//   tools           String
-//   image           String
-//   passportImage   String
-//   star            Int
-//   about           String
-// }
-
-// model Order {
-//   id                Int         @id @default(autoincrement())
-//   Product           String
-//   tools             Boolean
-//   total             Int
-//   location          String
-//   address           String
-//   date              DateTime
-//   paymentType       paymentType
-//   withDelivery      String
-//   status            String
-//   commentToDelivery String
-//   CreatedAt         DateTime    @default(now())
-//   user_id           Int
-//   user              User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-// }
-
-// enum paymentType {
-//   CASH
-//   CARD
-// }
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  order      Order   @relation(fields: [order_id], references: [id])
+  order_id   Int
+  product    Product @relation(fields: [product_id], references: [id])
+  product_id Int
+  count      Int
+  tools      Boolean
+}
 
 model Level {
-  id      Int     @id @default(autoincrement())
+  id      Int       @id @default(autoincrement())
   name_uz String
   name_ru String?
   name_en String?
+  Master  Master[]
+  Product Product[]
 }
 
 model Capacity {
@@ -156,25 +125,49 @@ model Contact {
   message String
 }
 
-model FAQ{
-  id     Int    @id @default(autoincrement())
+model FAQ {
+  id       Int    @id @default(autoincrement())
   question String
   answer   String
 }
 
-model Showcase{
-  id Int @id @default(autoincrement())
+model Showcase {
+  id      Int     @id @default(autoincrement())
   name_uz String
   name_ru String?
   name_en String?
-  image String
-  link String
+  image   String
+  link    String
 }
 
-model Partners{
-  id Int @id @default(autoincrement())
+model Partners {
+  id      Int     @id @default(autoincrement())
   name_uz String
   name_ru String?
   name_en String?
-  image String
+  image   String
+}
+
+model Master {
+  id              Int     @id @default(autoincrement())
+  fullName        String
+  phone           String
+  isActive        Boolean
+  year            Int
+  job             String
+  minWorkingHours Int
+  level_id        Int
+  level           Level   @relation(fields: [level_id], references: [id], onDelete: Cascade)
+  price_hourly    Int
+  price_daily     Int
+  experience      Int
+  tools           Boolean
+  image           String
+  star            Float?  @default(0.5)
+  about           String
+}
+
+
+model Comment{
+  id Int @id @default(autoincrement())
 }

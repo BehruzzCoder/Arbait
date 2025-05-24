@@ -18,9 +18,10 @@ import { ProductModule } from './product/product.module';
 import { CommentModule } from './comment/comment.module';
 import { OrderModule } from './order/order.module';
 import { ToolModule } from './tool/tool.module';
+import { BrandModule } from './brand/brand.module';
 
 @Module({
-  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule, CommentModule, OrderModule, ToolModule],
+  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule, CommentModule, OrderModule, ToolModule, BrandModule],
   controllers: [AppController],
   providers: [AppService],
 })

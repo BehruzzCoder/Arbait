@@ -12,41 +12,13 @@ export class MasterService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createMasterDto: CreateMasterDto) {
-    const {
-      masterLevel,
-      masterProduct,
-      ...masterData
-    } = createMasterDto;
+    const { year, ...rest } = createMasterDto;
 
     const newMaster = await this.prisma.master.create({
       data: {
-        fullName: masterData.fullName,
-        phone: masterData.phone,
-        year: masterData.year instanceof Date ? masterData.year.getFullYear() : masterData.year,
-        minWorkingHours: masterData.minWorkingHours,
-        price_hourly: masterData.price_hourly,
-        price_daily: masterData.price_daily,
-        experience: masterData.experience,
-        image: masterData.image,
-        about: masterData.about,
-        isActive: masterData.isActive ?? true,
-        tools: masterData.tools ?? false,
-        level_id: masterData.level_id ?? 1,
-        MasterLevel: {
-          create: masterLevel.map(level => ({
-            level: { connect: { id: level.level_id } },
-          })),
-        },
-        MasterProduct: {
-          create: masterProduct.map(product => ({
-            Product: { connect: { id: product.product_id } },
-          })),
-        },
-      },
-      include: {
-        MasterLevel: true,
-        MasterProduct: true,
-      },
+        ...rest,
+        year: new Date(year).getFullYear(),
+      }
     });
 
     return newMaster;

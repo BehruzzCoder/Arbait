@@ -157,12 +157,11 @@ model Partners {
 }
 
 model Master {
-  id       Int     @id @default(autoincrement())
-  fullName String
-  phone    String
-  isActive Boolean
-  year     Int
-
+  id              Int     @id @default(autoincrement())
+  fullName        String
+  phone           String
+  isActive        Boolean
+  year            Int
   minWorkingHours Int
   level_id        Int
   level           Level   @relation(fields: [level_id], references: [id], onDelete: Cascade)
@@ -189,7 +188,7 @@ model Tool {
   code             Int                @unique
   image            String
   isActive         Boolean            @default(true)
-  toolProducct     ToolProduct[]
+  toolProduct      ToolProduct[]
   orderTools       OrderTool[]
   ToolBrand        ToolBrand[]
   ToolCapacity     ToolCapacity[]
@@ -244,13 +243,15 @@ model OrderMaster {
 }
 
 model OrderTool {
+  id       Int   @id @default(autoincrement())
   order_id Int
   tool_id  Int
   count    Int
+  code     Int
   Order    Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
   Tool     Tool  @relation(fields: [tool_id], references: [id], onDelete: Cascade)
 
-  @@id([order_id, tool_id])
+  @@unique([order_id, tool_id])
 }
 
 model OrderProductTool {
@@ -259,6 +260,7 @@ model OrderProductTool {
   product_id   Int
   tool_id      Int
   count        Int
+  code         Int
   OrderProduct OrderProduct @relation(fields: [order_id, product_id], references: [order_id, product_id], onDelete: Cascade)
   Tool         Tool         @relation(fields: [tool_id], references: [id])
 }
@@ -269,11 +271,11 @@ model OrderProduct {
   count      Int
   measure    intervalType
   quantity   Int
-  price      Float
+  price      Float?
   Order      Order              @relation(fields: [order_id], references: [id], onDelete: Cascade)
   Product    Product            @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  levelId    Int?
-  Level      Level?             @relation(fields: [levelId], references: [id])
+  level_id   Int?
+  Level      Level?             @relation(fields: [level_id], references: [id])
   tools      OrderProductTool[]
 
   @@id([order_id, product_id])
@@ -321,7 +323,7 @@ model Order {
   date              DateTime
   paymentType       paymentType
   withDelivery      Boolean
-  status            OrderStatus
+  status            OrderStatus?   @default(PENDING)
   commentToDelivery String?
   user_id           Int?
   User              User?          @relation(fields: [user_id], references: [id])

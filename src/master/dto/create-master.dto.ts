@@ -14,8 +14,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { LevelMasterDto } from './level-master.dto';
-import { ProductMasterDto } from './product-master.dto';
 
 export class CreateMasterDto {
   @ApiProperty({ example: 'Ivanov Ivan Ivanovich' })
@@ -33,9 +31,6 @@ export class CreateMasterDto {
   @Type(() => Date)
   year: Date;
 
-  @ApiProperty({ example: 'Plumber' })
-  @IsString()
-  job: string;
 
   @ApiProperty({ example: 2 })
   @IsInt()
@@ -84,13 +79,5 @@ export class CreateMasterDto {
   @MinLength(10)
   about: string;
 
-  @ApiProperty({ type: [LevelMasterDto], isArray: true })
-  @ValidateNested({ each: true })
-  @Type(() => LevelMasterDto)
-  masterLevel: LevelMasterDto[];
 
-  @ApiProperty({ type: [ProductMasterDto], isArray: true })
-  @ValidateNested({ each: true })
-  @Type(() => ProductMasterDto)
-  masterProduct: ProductMasterDto[];
 }

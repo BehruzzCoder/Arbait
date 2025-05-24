@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { UpdateToolDto } from './dto/update-tool.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ToolService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService, private readonly mail: MailService) { }
   async create(createToolDto: CreateToolDto) {
     const {
       name,
@@ -19,13 +20,16 @@ export class ToolService {
       capacities,
     } = createToolDto;
 
+    let code_otp = await this.mail.generateOTP(name + image)
+    const otp_code =  Number(code_otp)
+
     const tool = await this.prisma.tool.create({
       data: {
         name,
         description,
         price,
         qauntity: quantity,
-        code,
+        code: otp_code,
         image,
         ToolBrand: {
           create: brands.map((brand) => ({

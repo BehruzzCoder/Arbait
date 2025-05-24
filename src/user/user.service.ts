@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { verifyOTPUserDto } from './dto/verifyotp-user.dto';
 import { ResetPasswordUserDto } from './dto/reset.password-user.dto';
 import { ResendOtpUserDto } from './dto/resend-otp.dto';
+import { CreateUserYrDto } from './dto/register-userYr.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -65,7 +67,40 @@ export class UserService {
     return { token };
   }
 
-  async registerYr()
+  async registerYr(dataYr: CreateUserYrDto) {
+    const { region_id, email, phone } = dataYr
+    let region_one = await this.prisma.region.findFirst({ where: { id: region_id } })
+    if (!region_one) {
+      throw new BadRequestException("region not found")
+    }
+    let email_one = await this.prisma.user.findFirst({ where: { email: email } })
+    if (email_one) {
+      throw new BadRequestException("email already exits")
+    }
+    let phone_one = await this.prisma.user.findFirst({ where: { phone } })
+    if (phone_one) {
+      throw new BadRequestException("phone already exits")
+    }
+    let hash = await bcrypt.hash(dataYr.password, 10)
+    const newUser = await this.prisma.user.create({
+      data: {
+        FullName: dataYr.FullName,
+        phone,
+        email,
+        password: hash,
+        role: UserRole.USER_YUR,
+        INN: dataYr.INN,
+        PC: dataYr.PC,
+        MFO: dataYr.MFO,
+        BANK: dataYr.BANK,
+        OKED: dataYr.OKED,
+        ADRESS: dataYr.ADRESS,
+        region_id,
+      },
+    });
+    return newUser
+
+  }
   async verifyOtp(dto: verifyOTPUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -85,7 +120,7 @@ export class UserService {
       data: { isActive: true },
     });
 
-    return { message: 'OTP muvaffaqiyatli tasdiqlandi'};
+    return { message: 'OTP muvaffaqiyatli tasdiqlandi' };
   }
 
   async resetPassword(data: ResetPasswordUserDto, user_id: number) {
@@ -154,4 +189,3 @@ export class UserService {
   }
 
 }
-  

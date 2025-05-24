@@ -4,11 +4,10 @@ import {
     IsEmail,
     IsOptional,
     IsInt,
-    IsEnum,
     MinLength,
 } from 'class-validator';
 
-export class CreateUserDto {
+export class CreateUserYrDto {
     @ApiProperty({ example: 'John Doe', description: 'Foydalanuvchining toliq ismi va familiyasi' })
     @IsString()
     @MinLength(3)

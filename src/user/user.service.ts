@@ -38,7 +38,7 @@ export class UserService {
       },
     });
 
-    return { message: "Foydalanuvchi muvaffaqiyatli ro'yxatdan o'tdi", newUser };
+    return newUser;
   }
 
   async login(email: string, password: string) {
@@ -65,6 +65,7 @@ export class UserService {
     return { token };
   }
 
+  async registerYr()
   async verifyOtp(dto: verifyOTPUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -84,9 +85,7 @@ export class UserService {
       data: { isActive: true },
     });
 
-    const token = this.jwt.sign({ id: user.id, role: user.role });
-
-    return { message: 'OTP muvaffaqiyatli tasdiqlandi', token };
+    return { message: 'OTP muvaffaqiyatli tasdiqlandi'};
   }
 
   async resetPassword(data: ResetPasswordUserDto, user_id: number) {
@@ -155,3 +154,4 @@ export class UserService {
   }
 
 }
+  

@@ -3,7 +3,6 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,17 +13,25 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  FullName  String
-  phone     String    @unique
-  email     String    @unique
-  password  String
-  role      UserRole  @default(USER_FIZ)
-  Sessions  Session[]
-  region_id Int
-  region    Region    @relation(fields: [region_id], references: [id], onDelete: Cascade)
-  isActive  Boolean   @default(false)
-  // Orders    Order[]
+  id         Int          @id @default(autoincrement())
+  FullName   String
+  phone      String       @unique
+  email      String       @unique
+  password   String
+  role       UserRole     @default(USER_FIZ)
+  INN        Int?
+  PC         Int?
+  MFO        Int?
+  BANK       String?
+  OKED       Int?
+  ADRESS     String?
+  Sessions   Session[]
+  region_id  Int
+  region     Region       @relation(fields: [region_id], references: [id], onDelete: Cascade)
+  isActive   Boolean      @default(false)
+  Order      Order[]
+  MasterStar MasterStar[]
+  Comment    Comment[]
 }
 
 enum UserRole {
@@ -47,66 +54,70 @@ model Session {
 }
 
 model Region {
-  id      Int     @id @default(autoincrement())
-  name_uz String? @unique
-  name_ru String? @unique
-  name_en String? @unique
-  User    User[]
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  User User[]
 }
 
 model Product {
-  id              Int         @id @default(autoincrement())
-  name_uz         String
-  name_ru         String
-  name_en         String
-  isActive        Boolean     @default(true)
+  id              Int             @id @default(autoincrement())
+  name            String
+  isActive        Boolean         @default(true)
   image           String
   minWorkingPrice Int
-  level_id        Int
-  level           Level       @relation(fields: [level_id], references: [id], onDelete: Cascade)
   price_hourly    Int
   price_daily     Int
-  tools           Boolean     @default(false)
-  orderItems      OrderItem[]
+  quantity        Int
+  productLevels   ProductLevel[]
+  toolProduct     ToolProduct[]
+  masterProduct   MasterProduct[]
+  orderProduct    OrderProduct[]
 }
 
-
-model Order {
-  id         Int         @id @default(autoincrement())
-  orderItems OrderItem[]
+model ToolBrand {
+  id       Int   @id @default(autoincrement())
+  tool_id  Int
+  brand_id Int
+  Tool     Tool  @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+  brand    Brand @relation(fields: [brand_id], references: [id], onDelete: Cascade)
 }
 
-model OrderItem {
-  id         Int     @id @default(autoincrement())
-  order      Order   @relation(fields: [order_id], references: [id])
-  order_id   Int
-  product    Product @relation(fields: [product_id], references: [id])
-  product_id Int
-  count      Int
-  tools      Boolean
+model ToolSize {
+  id      Int  @id @default(autoincrement())
+  tool_id Int
+  size_id Int
+  tool    Tool @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+  size    Size @relation(fields: [size_id], references: [id], onDelete: Cascade)
+}
+
+model ToolCapacity {
+  id          Int      @id @default(autoincrement())
+  tool_id     Int
+  capacity_id Int
+  tool        Tool     @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+  capacity    Capacity @relation(fields: [capacity_id], references: [id], onDelete: Cascade)
 }
 
 model Level {
-  id      Int       @id @default(autoincrement())
-  name_uz String
-  name_ru String?
-  name_en String?
-  Master  Master[]
-  Product Product[]
+  id     Int      @id @default(autoincrement())
+  name   String
+  Master Master[]
+
+  ProductLevel ProductLevel[]
+  MasterLevel  MasterLevel[]
+  OrderProduct OrderProduct[]
 }
 
 model Capacity {
-  id      Int     @id @default(autoincrement())
-  name_uz String
-  name_ru String?
-  name_en String?
+  id           Int            @id @default(autoincrement())
+  name         String
+  ToolCapacity ToolCapacity[]
 }
 
 model Size {
-  id      Int     @id @default(autoincrement())
-  name_uz String
-  name_ru String?
-  name_en String?
+  id       Int        @id @default(autoincrement())
+  name     String
+  ToolSize ToolSize[]
 }
 
 model GeneralInfo {
@@ -132,29 +143,26 @@ model FAQ {
 }
 
 model Showcase {
-  id      Int     @id @default(autoincrement())
-  name_uz String
-  name_ru String?
-  name_en String?
-  image   String
-  link    String
+  id    Int    @id @default(autoincrement())
+  name  String
+  image String
+  link  String
 }
 
 model Partners {
-  id      Int     @id @default(autoincrement())
-  name_uz String
-  name_ru String?
-  name_en String?
-  image   String
+  id        Int      @id @default(autoincrement())
+  name      String
+  image     String
+  craetedAt DateTime @default(now())
 }
 
 model Master {
-  id              Int     @id @default(autoincrement())
-  fullName        String
-  phone           String
-  isActive        Boolean
-  year            Int
-  job             String
+  id       Int     @id @default(autoincrement())
+  fullName String
+  phone    String
+  isActive Boolean
+  year     Int
+
   minWorkingHours Int
   level_id        Int
   level           Level   @relation(fields: [level_id], references: [id], onDelete: Cascade)
@@ -165,9 +173,172 @@ model Master {
   image           String
   star            Float?  @default(0.5)
   about           String
+
+  MasterStar    MasterStar[]
+  MasterLevel   MasterLevel[]
+  MasterProduct MasterProduct[]
+  OrderMaster   OrderMaster[]
 }
 
+model Tool {
+  id               Int                @id @default(autoincrement())
+  name             String
+  description      String
+  price            Int
+  qauntity         Int
+  code             Int                @unique
+  image            String
+  isActive         Boolean            @default(true)
+  toolProducct     ToolProduct[]
+  orderTools       OrderTool[]
+  ToolBrand        ToolBrand[]
+  ToolCapacity     ToolCapacity[]
+  OrderProductTool OrderProductTool[]
+  createdAt        DateTime           @default(now())
+  ToolSize         ToolSize[]
+}
 
-model Comment{
-  id Int @id @default(autoincrement())
+model Comment {
+  id        Int      @id @default(autoincrement())
+  message   String
+  order_id  Int?
+  user_id   Int?
+  createdAt DateTime @default(now())
+
+  Order Order? @relation(fields: [order_id], references: [id])
+  User  User?  @relation(fields: [user_id], references: [id])
+}
+
+model ToolProduct {
+  tool_id    Int
+  product_id Int
+  Tool       Tool    @relation(fields: [tool_id], references: [id])
+  Product    Product @relation(fields: [product_id], references: [id])
+
+  @@id([tool_id, product_id])
+}
+
+model MasterLevel {
+  id        Int    @id @default(autoincrement())
+  master_id Int
+  level_id  Int
+  master    Master @relation(fields: [master_id], references: [id], onDelete: Cascade)
+  level     Level  @relation(fields: [level_id], references: [id], onDelete: Cascade)
+}
+
+model MasterProduct {
+  master_id  Int
+  product_id Int
+  Master     Master  @relation(fields: [master_id], references: [id], onDelete: Cascade)
+  Product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@id([master_id, product_id])
+}
+
+model OrderMaster {
+  id        Int    @id @default(autoincrement())
+  order_id  Int
+  master_id Int
+  Order     Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  Master    Master @relation(fields: [master_id], references: [id], onDelete: Cascade)
+}
+
+model OrderTool {
+  order_id Int
+  tool_id  Int
+  count    Int
+  Order    Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  Tool     Tool  @relation(fields: [tool_id], references: [id], onDelete: Cascade)
+
+  @@id([order_id, tool_id])
+}
+
+model OrderProductTool {
+  id           Int          @id @default(autoincrement())
+  order_id     Int
+  product_id   Int
+  tool_id      Int
+  count        Int
+  OrderProduct OrderProduct @relation(fields: [order_id, product_id], references: [order_id, product_id], onDelete: Cascade)
+  Tool         Tool         @relation(fields: [tool_id], references: [id])
+}
+
+model OrderProduct {
+  order_id   Int
+  product_id Int
+  count      Int
+  measure    intervalType
+  quantity   Int
+  price      Float
+  Order      Order              @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  Product    Product            @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  levelId    Int?
+  Level      Level?             @relation(fields: [levelId], references: [id])
+  tools      OrderProductTool[]
+
+  @@id([order_id, product_id])
+}
+
+enum intervalType {
+  HOUR
+  DAY
+}
+
+model MasterStar {
+  id        Int      @id @default(autoincrement())
+  star      Float
+  userId    Int?
+  master_id Int?
+  User      User?    @relation(fields: [userId], references: [id])
+  Master    Master?  @relation(fields: [master_id], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Brand {
+  id        Int         @id @default(autoincrement())
+  name      String
+  tools     ToolBrand[]
+  createdAt DateTime    @default(now())
+}
+
+model ProductLevel {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  level_id   Int
+  product    Product  @relation(fields: [product_id], references: [id])
+  level      Level    @relation(fields: [level_id], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([product_id, level_id])
+}
+
+model Order {
+  id                Int            @id @default(autoincrement())
+  total             Float          @default(0)
+  lat               Float
+  long              Float
+  address           String
+  date              DateTime
+  paymentType       paymentType
+  withDelivery      Boolean
+  status            OrderStatus
+  commentToDelivery String?
+  user_id           Int?
+  User              User?          @relation(fields: [user_id], references: [id])
+  comment           Comment[]
+  orderTools        OrderTool[]
+  orderProducts     OrderProduct[]
+  masters           OrderMaster[]
+  createdAt         DateTime       @default(now())
+}
+
+enum paymentType {
+  CASH
+  CARD
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
 }

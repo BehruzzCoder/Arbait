@@ -1,18 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import {  IsString } from "class-validator";
 
 export class CreateLevelDto {
-    @ApiProperty({ example: "Junior", required: true })
+    @ApiProperty({ example: "Junior"})
     @IsString()
-    name_uz: string;
-
-    @ApiProperty({ example: "Младший", required: false })
-    @IsOptional()
-    @IsString()
-    name_ru?: string;
-
-    @ApiProperty({ example: "Junior", required: false })
-    @IsOptional()
-    @IsString()
-    name_en?: string;
+    name: string
 }

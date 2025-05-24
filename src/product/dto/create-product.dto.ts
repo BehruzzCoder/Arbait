@@ -1,46 +1,42 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber, IsString, IsUrl, ValidateNested } from 'class-validator';
+import { ProductToolDto } from './product-tool.dto';
+import { Type } from 'class-transformer';
+import { ProductLevelDto } from './product-level.dto';
 
 export class CreateProductDto {
-    @ApiProperty({ example: "santexnik" })
-    @IsString()
-    name_uz: string;
+  @ApiProperty({ example: 'Product Name' })
+  @IsString()
+  name: string;
 
-    @ApiProperty({ example: "santexnik" })
-    @IsString()
-    @IsOptional()
-    name_ru: string;
+  @ApiProperty({ example: 'https://example.com.png/' })
+  @IsString()
+  @IsUrl()
+  image: string;
 
-    @ApiProperty({ example: "santexnik" })
-    @IsString()
-    @IsOptional()
-    name_en: string;
+  @ApiProperty({ example: 100 })
+  @IsNumber()
+  price_hourly: number;
 
-    @ApiProperty({ example: true })
-    @IsBoolean()
-    isActive: boolean;
+  @ApiProperty({ example: 1000 })
+  @IsNumber()
+  quantity: number;
 
-    @ApiProperty({ example: "img_url" })
-    @IsString()
-    image: string;
+  @ApiProperty({ example: 1000 })
+  @IsNumber()
+  price_daily: number;
 
-    @ApiProperty({ example: 2 })
-    @IsNumber()
-    minWorkingPrice: number;
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  minWorkingPrice: number;
 
-    @ApiProperty({ example: 1 })
-    @IsNumber()
-    level_id: number;
+  @ApiProperty({ type: [ProductToolDto] })
+  @ValidateNested({ each: true })
+  @Type(() => ProductToolDto)
+  productTool: ProductToolDto[];
 
-    @ApiProperty({ example: 5000 })
-    @IsNumber()
-    price_hourly: number;
-
-    @ApiProperty({ example: 30000 })
-    @IsNumber()
-    price_daily: number;
-
-    @ApiProperty({ example: true })
-    @IsBoolean()
-    tools: boolean;
+  @ApiProperty({ type: [ProductLevelDto] })
+  @ValidateNested({ each: true })
+  @Type(() => ProductLevelDto)
+  productLevel: ProductLevelDto[];
 }

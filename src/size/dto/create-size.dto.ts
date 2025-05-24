@@ -1,18 +1,8 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString } from "class-validator";
 
 export class CreateSizeDto {
-    @ApiProperty({ required: true })
+    @ApiProperty({ required: true, description: "Size nomi (name_ maydoni Prisma modelga mos)" })
     @IsString()
-    name_uz: string;
-
-    @ApiPropertyOptional({ required: false })
-    @IsOptional()
-    @IsString()
-    name_ru?: string;
-
-    @ApiPropertyOptional({ required: false })
-    @IsOptional()
-    @IsString()
-    name_en?: string;
+    name: string;
 }

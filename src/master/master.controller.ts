@@ -24,6 +24,21 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
 
+// Query interface for strong typing
+class MasterQueryDto {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+  job?: string;
+  isActive?: string;
+  tools?: string;
+  level_id?: number;
+  year?: number;
+  experience?: number;
+}
+
 @ApiTags('Master 👨‍🔧')
 @Controller('master')
 export class MasterController {
@@ -33,18 +48,25 @@ export class MasterController {
   @ApiOperation({ summary: 'Create a new master' })
   @ApiBody({ type: CreateMasterDto })
   @ApiOkResponse({ description: 'Master created successfully' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard)
   create(@Body() createMasterDto: CreateMasterDto) {
     return this.masterService.create(createMasterDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all masters with filters, pagination, sorting, and search' })
+  @ApiOperation({
+    summary: 'Get all masters with filters, pagination, sorting, and search',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'sortBy', required: false, type: String, example: 'year' })
-  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], example: 'asc' })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    enum: ['asc', 'desc'],
+    example: 'asc',
+  })
   @ApiQuery({ name: 'search', required: false, type: String, example: 'developer' })
   @ApiQuery({ name: 'job', required: false, type: String })
   @ApiQuery({ name: 'isActive', required: false, type: Boolean })
@@ -53,7 +75,7 @@ export class MasterController {
   @ApiQuery({ name: 'year', required: false, type: Number })
   @ApiQuery({ name: 'experience', required: false, type: Number })
   @ApiOkResponse({ description: 'List of masters with metadata' })
-  findAll(@Query() query: any) {
+  findAll(@Query() query: MasterQueryDto) {
     return this.masterService.findAll(query);
   }
 
@@ -74,10 +96,7 @@ export class MasterController {
   @ApiNotFoundResponse({ description: 'Master not found' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  update(
-    @Param('id') id: string,
-    @Body() updateMasterDto: UpdateMasterDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateMasterDto: UpdateMasterDto) {
     return this.masterService.update(+id, updateMasterDto);
   }
 

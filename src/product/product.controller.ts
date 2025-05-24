@@ -16,7 +16,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/ProductQueryDto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
 
 @Controller('product')
@@ -31,6 +31,12 @@ export class ProductController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all products with filter, pagination and search' })
+  @ApiOkResponse({ description: 'List of products' })
+  @ApiQuery({ name: 'search', required: false, description: 'Search by product name' })
+  @ApiQuery({ name: 'isActive', required: false, description: 'Filter by active status', type: Boolean })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', type: Number })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of items per page', type: Number })
   findAll(@Query() query: ProductQueryDto) {
     return this.productService.findAll(query);
   }

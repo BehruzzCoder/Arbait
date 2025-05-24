@@ -1,79 +1,96 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 import {
-    IsString,
-    IsBoolean,
-    IsNumber,
-    IsOptional,
-    IsNotEmpty,
-    IsPhoneNumber,
-    Min,
-    Max,
-    MinLength,
-    MaxLength,
-    IsUrl,
-} from "class-validator";
+  IsBoolean,
+  IsDate,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Matches,
+  MaxLength,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { LevelMasterDto } from './level-master.dto';
+import { ProductMasterDto } from './product-master.dto';
 
 export class CreateMasterDto {
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    fullName: string;
+  @ApiProperty({ example: 'Ivanov Ivan Ivanovich' })
+  @IsString()
+  fullName: string;
 
-    @ApiProperty()
-    @IsPhoneNumber('UZ')
-    @IsString()
-    phone: string;
+  @ApiProperty({ example: '+998901234567' })
+  @Matches(/^(\+998)[0-9]{9}$/, {
+    message: 'Invalid Uzbek phone number',
+  })
+  phone: string;
 
-    @ApiProperty()
-    @IsBoolean()
-    isActive: boolean;
+  @ApiProperty({ example: '2000-01-01' })
+  @IsDate()
+  @Type(() => Date)
+  year: Date;
 
-    @ApiProperty()
-    @IsNumber()
-    @Min(1950)
-    @Max(new Date().getFullYear())
-    year: number;
+  @ApiProperty({ example: 'Plumber' })
+  @IsString()
+  job: string;
 
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    job: string;
+  @ApiProperty({ example: 2 })
+  @IsInt()
+  @Min(1)
+  minWorkingHours: number;
 
-    @ApiProperty()
-    @IsNumber()
-    @Min(1)
-    minWorkingHours: number;
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  level_id: number;
 
-    @ApiProperty()
-    @IsNumber()
-    level_id: number;
+  @ApiProperty({ example: 100 })
+  @IsInt()
+  @Min(0)
+  price_hourly: number;
 
-    @ApiProperty()
-    @IsNumber()
-    @Min(0)
-    price_daily: number;
+  @ApiProperty({ example: 2400 })
+  @IsInt()
+  @Min(0)
+  price_daily: number;
 
-    @ApiProperty()
-    @IsNumber()
-    @Min(0)
-    price_hourly: number;
+  @ApiProperty({ example: 7 })
+  @IsInt()
+  @Min(0)
+  experience: number;
 
-    @ApiProperty()
-    @IsNumber()
-    @Min(0)
-    experience: number;
+  @ApiProperty({ example: 'https://example.com/image.png' })
+  @IsString()
+  @IsUrl()
+  image: string;
 
-    @ApiProperty()
-    @IsBoolean()
-    tools: boolean;
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  tools: boolean;
 
-    @ApiProperty()
-    @IsString()
-    image: string;
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  isActive: boolean;
 
-    @ApiProperty()
-    @IsString()
-    @MinLength(10)
-    @MaxLength(1000)
-    about: string;
+  @ApiProperty({ example: 4.7, required: false, default: 0.5 })
+  @IsOptional()
+  @IsNumber()
+  star?: number;
+
+  @ApiProperty({ example: 'Professional worker with 7 years of experience' })
+  @IsString()
+  @MinLength(10)
+  about: string;
+
+  @ApiProperty({ type: [LevelMasterDto], isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => LevelMasterDto)
+  masterLevel: LevelMasterDto[];
+
+  @ApiProperty({ type: [ProductMasterDto], isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => ProductMasterDto)
+  masterProduct: ProductMasterDto[];
 }

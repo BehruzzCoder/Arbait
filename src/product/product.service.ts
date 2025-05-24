@@ -7,80 +7,103 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/ProductQueryDto';
 
+
 @Injectable()
 export class ProductService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createProductDto: CreateProductDto) {
-    const { level_id } = createProductDto;
-
-    const level = await this.prisma.level.findUnique({
-      where: { id: level_id },
-    });
-
-    if (!level) {
-      throw new NotFoundException('Level not found');
-    }
+    const {
+      productTool,
+      productLevel,
+      ...productData
+    } = createProductDto;
 
     const newProduct = await this.prisma.product.create({
-      data: createProductDto,
+      data: {
+        ...productData,
+
+        toolProduct: {
+          create: productTool.map(tool => ({
+            Tool: {
+              connect: { id: tool.tool_id },
+            },
+          })),
+        },
+
+        productLevels: {
+          create: productLevel.map(level => ({
+            level: {
+              connect: { id: level.level_id },
+            },
+          })),
+        },
+      },
+      include: {
+        toolProduct: true,
+        productLevels: true,
+      },
     });
 
     return newProduct;
   }
 
 
+
+
+
   async findAll(query: ProductQueryDto) {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'id',
-      sortOrder = 'asc',
       search,
       isActive,
-      level_id,
+      minPriceHourly,
+      maxPriceHourly,
+      minPriceDaily,
+      maxPriceDaily,
+      orderBy = 'name',
+      orderDirection = 'asc',
     } = query;
-
-    const skip = (page - 1) * limit;
 
     const where: any = {};
 
     if (search) {
-      where.OR = [
-        { name_uz: { contains: search, mode: 'insensitive' } },
-        { name_ru: { contains: search, mode: 'insensitive' } },
-        { name_en: { contains: search, mode: 'insensitive' } },
-      ];
+      where.name = { contains: search, mode: 'insensitive' };
     }
 
-    if (isActive === 'true') {
-      where.isActive = true;
-    } else if (isActive === 'false') {
-      where.isActive = false;
-    }
-    
-
-    if (level_id !== undefined) {
-      where.level_id = Number(level_id);
+    if (typeof isActive === 'boolean') {
+      where.isActive = isActive;
     }
 
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.product.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          [sortBy]: sortOrder,
-        },
-      }),
-      this.prisma.product.count({ where }),
-    ]);
+    if (minPriceHourly !== undefined || maxPriceHourly !== undefined) {
+      where.price_hourly = {};
+      if (minPriceHourly !== undefined) where.price_hourly.gte = minPriceHourly;
+      if (maxPriceHourly !== undefined) where.price_hourly.lte = maxPriceHourly;
+    }
+
+    if (minPriceDaily !== undefined || maxPriceDaily !== undefined) {
+      where.price_daily = {};
+      if (minPriceDaily !== undefined) where.price_daily.gte = minPriceDaily;
+      if (maxPriceDaily !== undefined) where.price_daily.lte = maxPriceDaily;
+    }
+
+    const products = await this.prisma.product.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        [orderBy]: orderDirection,
+      },
+    });
+
+    const total = await this.prisma.product.count({ where });
 
     return {
+      data: products,
       total,
       page,
-      limit,
-      data,
+      lastPage: Math.ceil(total / limit),
     };
   }
 

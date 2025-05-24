@@ -9,8 +9,8 @@ import { AuthGuard } from 'src/auth/jwt.guard';
 export class RegionController {
   constructor(private readonly regionService: RegionService) { }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard)
   @Post()
   create(@Body() createRegionDto: CreateRegionDto) {
     return this.regionService.create(createRegionDto);

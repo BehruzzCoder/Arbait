@@ -11,8 +11,7 @@ export class CreateCapacityDto {
     @IsString()
     name_ru?: string;
 
-    @ApiPropertyOptional({ required: false })
-    @IsOptional()
+    @ApiPropertyOptional()
     @IsString()
-    name_en?: string;
+    name: string;
 }

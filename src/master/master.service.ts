@@ -12,14 +12,47 @@ export class MasterService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createMasterDto: CreateMasterDto) {
-    const { level_id } = createMasterDto
-    let one = await this.prisma.level.findFirst({ where: { id: level_id } })
-    if (!one) {
-      throw new NotFoundException("level_id not found")
-    }
-    const newMaster = await this.prisma.master.create({ data: createMasterDto })
-    return newMaster
+    const {
+      masterLevel,
+      masterProduct,
+      ...masterData
+    } = createMasterDto;
+
+    const newMaster = await this.prisma.master.create({
+      data: {
+        fullName: masterData.fullName,
+        phone: masterData.phone,
+        year: masterData.year instanceof Date ? masterData.year.getFullYear() : masterData.year,
+        minWorkingHours: masterData.minWorkingHours,
+        price_hourly: masterData.price_hourly,
+        price_daily: masterData.price_daily,
+        experience: masterData.experience,
+        image: masterData.image,
+        about: masterData.about,
+        isActive: masterData.isActive ?? true,
+        tools: masterData.tools ?? false,
+        level_id: masterData.level_id ?? 1,
+        MasterLevel: {
+          create: masterLevel.map(level => ({
+            level: { connect: { id: level.level_id } },
+          })),
+        },
+        MasterProduct: {
+          create: masterProduct.map(product => ({
+            Product: { connect: { id: product.product_id } },
+          })),
+        },
+      },
+      include: {
+        MasterLevel: true,
+        MasterProduct: true,
+      },
+    });
+
+    return newMaster;
   }
+
+
 
   async findAll(query: {
     page?: number;
@@ -28,11 +61,11 @@ export class MasterService {
     order?: 'asc' | 'desc';
     search?: string;
     job?: string;
-    isActive?: any;
-    tools?: any;
-    level_id?: any;
-    year?: any;
-    experience?: any;
+    isActive?: string | boolean;
+    tools?: string | boolean;
+    level_id?: string | number;
+    year?: string | number;
+    experience?: string | number;
   }) {
     const {
       page = 1,
@@ -48,7 +81,7 @@ export class MasterService {
       experience,
     } = query;
 
-    const skip = (+page - 1) * +limit;
+    const skip = (Number(page) - 1) * Number(limit);
 
     const validSortFields = [
       'id',
@@ -56,15 +89,13 @@ export class MasterService {
       'job',
       'year',
       'price_daily',
-      'price_hours',
+      'price_hourly', // To‘g‘rilandi (oldingi 'price_hours' noto‘g‘ri edi)
       'experience',
     ];
 
     if (!validSortFields.includes(sortBy)) {
       throw new BadRequestException(
-        `sortBy field "${sortBy}" is invalid. Use one of: ${validSortFields.join(
-          ', ',
-        )}`,
+        `sortBy field "${sortBy}" is invalid. Use one of: ${validSortFields.join(', ')}`,
       );
     }
 
@@ -77,41 +108,43 @@ export class MasterService {
       ];
     }
 
-    if (job) where.job = job;
+    if (job) where.job = { equals: job, mode: 'insensitive' };
 
     if (isActive !== undefined) {
-      if (isActive === 'true' || isActive === 'false') {
-        where.isActive = isActive === 'true';
+      if (isActive === 'true' || isActive === true) {
+        where.isActive = true;
+      } else if (isActive === 'false' || isActive === false) {
+        where.isActive = false;
       } else {
         throw new BadRequestException('isActive must be true or false');
       }
     }
 
     if (tools !== undefined) {
-      if (tools === 'true' || tools === 'false') {
-        where.tools = tools === 'true';
+      if (tools === 'true' || tools === true) {
+        where.tools = true;
+      } else if (tools === 'false' || tools === false) {
+        where.tools = false;
       } else {
         throw new BadRequestException('tools must be true or false');
       }
     }
 
     if (level_id !== undefined) {
-      const num = parseInt(level_id);
-      if (isNaN(num))
-        throw new BadRequestException('level_id must be a number');
+      const num = Number(level_id);
+      if (isNaN(num)) throw new BadRequestException('level_id must be a number');
       where.level_id = num;
     }
 
     if (year !== undefined) {
-      const num = parseInt(year);
+      const num = Number(year);
       if (isNaN(num)) throw new BadRequestException('year must be a number');
       where.year = num;
     }
 
     if (experience !== undefined) {
-      const num = parseInt(experience);
-      if (isNaN(num))
-        throw new BadRequestException('experience must be a number');
+      const num = Number(experience);
+      if (isNaN(num)) throw new BadRequestException('experience must be a number');
       where.experience = num;
     }
 
@@ -119,7 +152,7 @@ export class MasterService {
       this.prisma.master.findMany({
         where,
         skip,
-        take: +limit,
+        take: Number(limit),
         orderBy: {
           [sortBy]: order,
         },
@@ -129,9 +162,9 @@ export class MasterService {
 
     return {
       total,
-      page: +page,
-      limit: +limit,
-      totalPages: Math.ceil(total / +limit),
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit)),
       data,
     };
   }
@@ -152,9 +185,19 @@ export class MasterService {
       throw new NotFoundException(`Master with ID ${id} not found`);
     }
 
+    const { year, ...rest } = updateMasterDto as any;
+
+    const updateData: any = {
+      ...rest,
+    };
+
+    if (year !== undefined) {
+      updateData.year = year instanceof Date ? year.getFullYear() : Number(year);
+    }
+
     return await this.prisma.master.update({
       where: { id },
-      data: updateMasterDto,
+      data: updateData,
     });
   }
 
@@ -170,4 +213,5 @@ export class MasterService {
 
     return existing;
   }
+
 }

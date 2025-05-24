@@ -15,10 +15,13 @@ import { ShowcaseModule } from './showcase/showcase.module';
 import { PartnersModule } from './partners/partners.module';
 import { MasterModule } from './master/master.module';
 import { ProductModule } from './product/product.module';
+import { CommentModule } from './comment/comment.module';
+import { OrderModule } from './order/order.module';
+import { ToolModule } from './tool/tool.module';
 
 @Module({
-  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule],
+  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule, CommentModule, OrderModule, ToolModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

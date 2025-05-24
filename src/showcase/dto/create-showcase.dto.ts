@@ -1,22 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsNotEmpty } from "class-validator";
 
 export class CreateShowcaseDto {
-    @ApiProperty({ required: true })
+    @ApiProperty({ required: true, example: "Showcase nomi (uz)" })
     @IsString()
-    name_uz: string;
-    @ApiProperty({ required: false })
-    @IsOptional()
+    @IsNotEmpty()
+    name: string;
+
+
+    @ApiProperty({ required: true, example: "https://example.com/image.jpg" })
     @IsString()
-    name_ru?: string;
-    @ApiProperty({ required: false })
-    @IsOptional()
-    @IsString()
-    name_en?: string;
-    @ApiProperty({ required: true })
-    @IsString()
+    @IsNotEmpty()
     image: string;
-    @ApiProperty({ required: true })
+
+    @ApiProperty({ required: true, example: "https://example.com" })
     @IsString()
+    @IsNotEmpty()
     link: string;
 }

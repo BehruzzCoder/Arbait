@@ -12,10 +12,51 @@ export class BrandService {
     return newBrand
   }
 
-  async findAll() {
-    let data = await this.prisma.brand.findMany()
-    return data
+  async findAll(query: {
+    name?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: 'name';
+    sortOrder?: 'asc' | 'desc';
+  }) {
+    const {
+      name,
+      page = 1,
+      limit = 10,
+      sortBy = 'name',
+      sortOrder = 'asc'
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (name) {
+      where.name = {
+        contains: name,
+        mode: 'insensitive'
+      };
+    }
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.brand.findMany({
+        where,
+        skip,
+        take: +limit,
+        orderBy: {
+          [sortBy]: sortOrder
+        }
+      }),
+      this.prisma.brand.count({ where })
+    ]);
+
+    return {
+      total,
+      page: +page,
+      limit: +limit,
+      data
+    };
   }
+
 
   async findOne(id: number) {
     const brand = await this.prisma.brand.findUnique({

@@ -3,17 +3,25 @@ import {
     Post,
     UploadedFile,
     UseGuards,
-    UseInterceptors
+    UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { ApiConsumes, ApiBody, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+    ApiConsumes,
+    ApiBody,
+    ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiOkResponse,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { extname } from 'path';
 import { AuthGuard } from 'src/auth/jwt.guard';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-@ApiTags('Upload')
+@ApiTags('Upload 📤')
 @Controller('upload')
 export class UploadController {
     @Post()
@@ -25,9 +33,16 @@ export class UploadController {
                     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                     const ext = extname(file.originalname);
                     cb(null, `${uniqueSuffix}${ext}`);
+                },
+            }),
+            fileFilter: (req, file, cb) => {
+                if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+                    return cb(new Error('Only image files are allowed!'), false);
                 }
-            })
-        })
+                cb(null, true);
+            },
+            limits: { fileSize: 5 * 1024 * 1024 },
+        }),
     )
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -36,15 +51,19 @@ export class UploadController {
             properties: {
                 file: {
                     type: 'string',
-                    format: 'binary'
-                }
-            }
-        }
+                    format: 'binary',
+                    description: 'Upload file',
+                },
+            },
+        },
     })
+    @ApiOperation({ summary: 'Upload a file' })
+    @ApiOkResponse({ description: 'File uploaded successfully.' })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
     uploadFile(@UploadedFile() file: Express.Multer.File) {
         return {
             message: 'File uploaded successfully',
-            filePath: `/uploads/${file.filename}`
+            filePath: `/uploads/${file.filename}`,
         };
     }
 }

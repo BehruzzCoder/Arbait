@@ -53,60 +53,78 @@ export class ProductService {
 
 
   async findAll(query: ProductQueryDto) {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      isActive,
-      minPriceHourly,
-      maxPriceHourly,
-      minPriceDaily,
-      maxPriceDaily,
-      orderBy = 'name',
-      orderDirection = 'asc',
-    } = query;
+  const {
+    search,
+    isActive,
+    minPriceHourly,
+    maxPriceHourly,
+    minPriceDaily,
+    maxPriceDaily,
+    minQuantity,
+    maxQuantity,
+    minWorkingPrice,
+    maxWorkingPrice,
+    page = '1',
+    limit = '10',
+    orderBy = 'name',
+    orderDirection = 'asc',
+  } = query;
 
-    const where: any = {};
+  const where: any = {};
 
-    if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
-    }
-
-    if (typeof isActive === 'boolean') {
-      where.isActive = isActive;
-    }
-
-    if (minPriceHourly !== undefined || maxPriceHourly !== undefined) {
-      where.price_hourly = {};
-      if (minPriceHourly !== undefined) where.price_hourly.gte = minPriceHourly;
-      if (maxPriceHourly !== undefined) where.price_hourly.lte = maxPriceHourly;
-    }
-
-    if (minPriceDaily !== undefined || maxPriceDaily !== undefined) {
-      where.price_daily = {};
-      if (minPriceDaily !== undefined) where.price_daily.gte = minPriceDaily;
-      if (maxPriceDaily !== undefined) where.price_daily.lte = maxPriceDaily;
-    }
-
-    const products = await this.prisma.product.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: {
-        [orderBy]: orderDirection,
-      },
-    });
-
-    const total = await this.prisma.product.count({ where });
-
-    return {
-      data: products,
-      total,
-      page,
-      lastPage: Math.ceil(total / limit),
-    };
+  if (search) {
+    where.name = { contains: search, mode: 'insensitive' };
   }
 
+  if (isActive !== undefined) {
+    where.isActive = isActive === 'true';
+  }
+
+  if (minPriceHourly || maxPriceHourly) {
+    where.price_hourly = {};
+    if (minPriceHourly) where.price_hourly.gte = Number(minPriceHourly);
+    if (maxPriceHourly) where.price_hourly.lte = Number(maxPriceHourly);
+  }
+
+  if (minPriceDaily || maxPriceDaily) {
+    where.price_daily = {};
+    if (minPriceDaily) where.price_daily.gte = Number(minPriceDaily);
+    if (maxPriceDaily) where.price_daily.lte = Number(maxPriceDaily);
+  }
+
+  if (minQuantity || maxQuantity) {
+    where.quantity = {};
+    if (minQuantity) where.quantity.gte = Number(minQuantity);
+    if (maxQuantity) where.quantity.lte = Number(maxQuantity);
+  }
+
+  if (minWorkingPrice || maxWorkingPrice) {
+    where.minWorkingPrice = {};
+    if (minWorkingPrice) where.minWorkingPrice.gte = Number(minWorkingPrice);
+    if (maxWorkingPrice) where.minWorkingPrice.lte = Number(maxWorkingPrice);
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const take = Number(limit);
+
+  const data = await this.prisma.product.findMany({
+    where,
+    skip,
+    take,
+    orderBy: {
+      [orderBy]: orderDirection,
+    },
+  });
+
+  const total = await this.prisma.product.count({ where });
+
+  return {
+    data,
+    total,
+    page: Number(page),
+    lastPage: Math.ceil(total / take),
+  };
+}
 
 
   async findOne(id: number) {

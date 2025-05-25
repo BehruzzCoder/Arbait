@@ -38,6 +38,11 @@ export class MasterService {
     level_id?: string | number;
     year?: string | number;
     experience?: string | number;
+    minWorkingHours?: string | number;
+    price_hourly_min?: string | number;
+    price_hourly_max?: string | number;
+    price_daily_min?: string | number;
+    price_daily_max?: string | number;
   }) {
     const {
       page = 1,
@@ -51,6 +56,11 @@ export class MasterService {
       level_id,
       year,
       experience,
+      minWorkingHours,
+      price_hourly_min,
+      price_hourly_max,
+      price_daily_min,
+      price_daily_max,
     } = query;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -61,8 +71,9 @@ export class MasterService {
       'job',
       'year',
       'price_daily',
-      'price_hourly', // To‘g‘rilandi (oldingi 'price_hours' noto‘g‘ri edi)
+      'price_hourly',
       'experience',
+      'minWorkingHours',
     ];
 
     if (!validSortFields.includes(sortBy)) {
@@ -80,7 +91,7 @@ export class MasterService {
       ];
     }
 
-    if (job) where.job = { equals: job, mode: 'insensitive' };
+    if (job) where.job = { contains: job, mode: 'insensitive' };
 
     if (isActive !== undefined) {
       if (isActive === 'true' || isActive === true) {
@@ -118,6 +129,40 @@ export class MasterService {
       const num = Number(experience);
       if (isNaN(num)) throw new BadRequestException('experience must be a number');
       where.experience = num;
+    }
+
+    if (minWorkingHours !== undefined) {
+      const num = Number(minWorkingHours);
+      if (isNaN(num)) throw new BadRequestException('minWorkingHours must be a number');
+      where.minWorkingHours = { gte: num };
+    }
+
+    if (price_hourly_min !== undefined || price_hourly_max !== undefined) {
+      where.price_hourly = {};
+      if (price_hourly_min !== undefined) {
+        const num = Number(price_hourly_min);
+        if (isNaN(num)) throw new BadRequestException('price_hourly_min must be a number');
+        where.price_hourly.gte = num;
+      }
+      if (price_hourly_max !== undefined) {
+        const num = Number(price_hourly_max);
+        if (isNaN(num)) throw new BadRequestException('price_hourly_max must be a number');
+        where.price_hourly.lte = num;
+      }
+    }
+
+    if (price_daily_min !== undefined || price_daily_max !== undefined) {
+      where.price_daily = {};
+      if (price_daily_min !== undefined) {
+        const num = Number(price_daily_min);
+        if (isNaN(num)) throw new BadRequestException('price_daily_min must be a number');
+        where.price_daily.gte = num;
+      }
+      if (price_daily_max !== undefined) {
+        const num = Number(price_daily_max);
+        if (isNaN(num)) throw new BadRequestException('price_daily_max must be a number');
+        where.price_daily.lte = num;
+      }
     }
 
     const [data, total] = await this.prisma.$transaction([

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { UpdateToolDto } from './dto/update-tool.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -64,10 +64,81 @@ export class ToolService {
   }
 
 
-  async findAll() {
-    let data = await this.prisma.tool.findMany({ include: { ToolBrand: true, ToolSize: true, ToolCapacity: true } })
-    return data
+  async findAll(query: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+  price_min?: number;
+  price_max?: number;
+  quantity_min?: number;
+  quantity_max?: number;
+}) {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = 'id',
+    order = 'asc',
+    search,
+    price_min,
+    price_max,
+    quantity_min,
+    quantity_max,
+  } = query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const where: any = {};
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+    ];
   }
+
+  if (price_min || price_max) {
+    where.price = {};
+    if (price_min) where.price.gte = Number(price_min);
+    if (price_max) where.price.lte = Number(price_max);
+  }
+
+  if (quantity_min || quantity_max) {
+    where.quantity = {};
+    if (quantity_min) where.quantity.gte = Number(quantity_min);
+    if (quantity_max) where.quantity.lte = Number(quantity_max);
+  }
+
+  const validSortFields = ['id', 'name', 'price', 'quantity', 'code'];
+  if (!validSortFields.includes(sortBy)) {
+    throw new BadRequestException(`sortBy "${sortBy}" is invalid. Valid: ${validSortFields.join(', ')}`);
+  }
+
+  const [data, total] = await this.prisma.$transaction([
+    this.prisma.tool.findMany({
+      where,
+      skip,
+      take: Number(limit),
+      orderBy: { [sortBy]: order },
+      include: {
+        ToolBrand: true,
+        ToolSize: true,
+        ToolCapacity: true,
+      },
+    }),
+    this.prisma.tool.count({ where }),
+  ]);
+
+  return {
+    total,
+    page: Number(page),
+    limit: Number(limit),
+    totalPages: Math.ceil(total / Number(limit)),
+    data,
+  };
+}
+
 
   async findOne(id: number) {
     let one = await this.prisma.tool.findFirst({ where: { id }, include: { ToolBrand: true, ToolSize: true, ToolCapacity: true } })

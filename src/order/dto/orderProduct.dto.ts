@@ -17,11 +17,11 @@ export enum workType {
 }
 
 export class OrderProductDto {
-  @ApiProperty({ example: "product's (UUID)" })
+  @ApiProperty({ example: 1})
   @IsNumber()
   product_id: number;
 
-  @ApiProperty({ example: "level's (UUID)" })
+  @ApiProperty({ example: 1 })
   @IsNumber()
   level_id: number;
 

@@ -39,7 +39,7 @@ export class CreateOrderDto {
   @IsBoolean()
   withDelivery: boolean;
 
-  @ApiProperty({ example: 'Be carefull with delivery' })
+  @ApiProperty({ example: 'Comment to deleivery' })
   @IsOptional()
   @IsString()
   commentToDelivery?: string;

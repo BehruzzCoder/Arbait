@@ -7,7 +7,7 @@ import { AuthGuard } from 'src/auth/jwt.guard';
 import { Request } from 'express';
 import { UserRole } from '@prisma/client';
 
-@ApiTags('Capacity')
+@ApiTags('Capacity 📦')
 @Controller('capacity')
 export class CapacityController {
   constructor(private readonly capacityService: CapacityService) { }

@@ -26,9 +26,8 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
 import { Request } from 'express';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client'
 
-// Query interface for strong typing
 class MasterQueryDto {
   page?: number;
   limit?: number;
@@ -66,22 +65,22 @@ export class MasterController {
   @ApiOperation({
     summary: 'Get all masters with filters, pagination, sorting, and search',
   })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'sortBy', required: false, type: String, example: 'year' })
-  @ApiQuery({
-    name: 'order',
-    required: false,
-    enum: ['asc', 'desc'],
-    example: 'asc',
-  })
-  @ApiQuery({ name: 'search', required: false, type: String, example: 'developer' })
-  @ApiQuery({ name: 'job', required: false, type: String })
-  @ApiQuery({ name: 'isActive', required: false, type: Boolean })
-  @ApiQuery({ name: 'tools', required: false, type: Boolean })
-  @ApiQuery({ name: 'level_id', required: false, type: Number })
-  @ApiQuery({ name: 'year', required: false, type: Number })
-  @ApiQuery({ name: 'experience', required: false, type: Number })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({ name: 'sortBy', required: false, example: 'id' })
+  @ApiQuery({ name: 'order', required: false, example: 'asc' })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'job', required: false })
+  @ApiQuery({ name: 'isActive', required: false, example: true })
+  @ApiQuery({ name: 'tools', required: false, example: true })
+  @ApiQuery({ name: 'level_id', required: false, example: 1 })
+  @ApiQuery({ name: 'year', required: false, example: 2000 })
+  @ApiQuery({ name: 'experience', required: false, example: 3 })
+  @ApiQuery({ name: 'minWorkingHours', required: false, example: 2 })
+  @ApiQuery({ name: 'price_hourly_min', required: false, example: 100 })
+  @ApiQuery({ name: 'price_hourly_max', required: false, example: 300 })
+  @ApiQuery({ name: 'price_daily_min', required: false, example: 1000 })
+  @ApiQuery({ name: 'price_daily_max', required: false, example: 3000 })
   @ApiOkResponse({ description: 'List of masters with metadata' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard)

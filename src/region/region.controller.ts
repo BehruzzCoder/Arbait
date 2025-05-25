@@ -1,19 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { RegionService } from './region.service';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
 
 @Controller('region')
 export class RegionController {
   constructor(private readonly regionService: RegionService) { }
 
-  // @ApiBearerAuth()
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createRegionDto: CreateRegionDto) {
-    return this.regionService.create(createRegionDto);
+  create(@Req() req: Request, @Body() createRegionDto: CreateRegionDto) {
+    if (req.user?.role == UserRole.ADMIN) {
+      return this.regionService.create(createRegionDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Get()
@@ -28,14 +34,22 @@ export class RegionController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRegionDto: UpdateRegionDto) {
-    return this.regionService.update(+id, updateRegionDto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() updateRegionDto: UpdateRegionDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.regionService.update(+id, updateRegionDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.regionService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN){
+      return this.regionService.remove(+id);
+    }else{
+      throw new ForbiddenException("Access denied")
+    }
   }
 }

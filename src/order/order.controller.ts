@@ -1,39 +1,68 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { AddMastersToOrderDto } from './dto/addMasters.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('order')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto,2);
+  create(@Req()req:Request,@Body() createOrderDto: CreateOrderDto) {
+    if(!req.user?.id){
+      throw new NotFoundException("User not found")
+    }
+    return this.orderService.create(createOrderDto, req.user.id);
   }
 
   @Post("assign")
-  assign(@Body() data:AddMastersToOrderDto ) {
-    return this.orderService.assign(data);
+  assign(@Req() req: Request, @Body() data: AddMastersToOrderDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.VIEWER_ADMIN) {
+      return this.orderService.assign(data);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  findAll(@Req() req: Request) {
+    if (req.user?.role == UserRole.VIEWER_ADMIN || req.user?.role == UserRole.ADMIN) {
+      return this.orderService.findAll()
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+  findOne(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.VIEWER_ADMIN) {
+      return this.orderService.findOne(+id);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.orderService.update(+id, updateOrderDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN){
+      return this.orderService.remove(+id);
+    }else{
+      throw new  ForbiddenException("Access denied")
+    }
   }
 }

@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { MasterService } from './master.service';
 import { CreateMasterDto } from './dto/create-master.dto';
@@ -23,6 +25,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
 
 // Query interface for strong typing
 class MasterQueryDto {
@@ -48,10 +52,14 @@ export class MasterController {
   @ApiOperation({ summary: 'Create a new master' })
   @ApiBody({ type: CreateMasterDto })
   @ApiOkResponse({ description: 'Master created successfully' })
-  // @ApiBearerAuth()
-  // @UseGuards(AuthGuard)
-  create(@Body() createMasterDto: CreateMasterDto) {
-    return this.masterService.create(createMasterDto);
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  create(@Req() req: Request, @Body() createMasterDto: CreateMasterDto) {
+    if (req.user?.role == UserRole.ADMIN) {
+      return this.masterService.create(createMasterDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Get()
@@ -75,8 +83,14 @@ export class MasterController {
   @ApiQuery({ name: 'year', required: false, type: Number })
   @ApiQuery({ name: 'experience', required: false, type: Number })
   @ApiOkResponse({ description: 'List of masters with metadata' })
-  findAll(@Query() query: MasterQueryDto) {
-    return this.masterService.findAll(query);
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  findAll(@Req() req: Request, @Query() query: MasterQueryDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.VIEWER_ADMIN) {
+      return this.masterService.findAll(query);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Get(':id')
@@ -84,8 +98,14 @@ export class MasterController {
   @ApiParam({ name: 'id', type: Number })
   @ApiOkResponse({ description: 'Master found' })
   @ApiNotFoundResponse({ description: 'Master not found' })
-  findOne(@Param('id') id: string) {
-    return this.masterService.findOne(+id);
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  findOne(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.VIEWER_ADMIN) {
+      return this.masterService.findOne(+id);
+    } else {
+      throw new ForbiddenException("Acess denied")
+    }
   }
 
   @Patch(':id')
@@ -96,8 +116,12 @@ export class MasterController {
   @ApiNotFoundResponse({ description: 'Master not found' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  update(@Param('id') id: string, @Body() updateMasterDto: UpdateMasterDto) {
-    return this.masterService.update(+id, updateMasterDto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() updateMasterDto: UpdateMasterDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.masterService.update(+id, updateMasterDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Delete(':id')
@@ -107,7 +131,8 @@ export class MasterController {
   @ApiNotFoundResponse({ description: 'Master not found' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  remove(@Param('id') id: string) {
-    return this.masterService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN)
+      return this.masterService.remove(+id);
   }
 }

@@ -11,6 +11,8 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -18,6 +20,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/ProductQueryDto';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
 
 @Controller('product')
 export class ProductController {
@@ -26,8 +30,12 @@ export class ProductController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  create(@Req() req: Request, @Body() createProductDto: CreateProductDto) {
+    if (req.user?.role == UserRole.ADMIN) {
+      return this.productService.create(createProductDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Get()
@@ -50,17 +58,25 @@ export class ProductController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(
+  update(@Req() req: Request,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return this.productService.update(id, updateProductDto);
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.productService.update(id, updateProductDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.productService.remove(id);
+  remove(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN){
+      return this.productService.remove(id);
+    }else{
+      throw new  ForbiddenException("Access denied")
+    }
   }
 }

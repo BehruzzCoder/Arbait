@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { ShowcaseService } from './showcase.service';
 import { CreateShowcaseDto } from './dto/create-showcase.dto';
 import { UpdateShowcaseDto } from './dto/update-showcase.dto';
 import { AuthGuard } from 'src/auth/jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
 
 @Controller('showcase')
 export class ShowcaseController {
@@ -12,8 +14,12 @@ export class ShowcaseController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createShowcaseDto: CreateShowcaseDto) {
-    return this.showcaseService.create(createShowcaseDto);
+  create(@Req() req: Request, @Body() createShowcaseDto: CreateShowcaseDto) {
+    if (req.user?.role == UserRole.ADMIN) {
+      return this.showcaseService.create(createShowcaseDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @ApiBearerAuth()
@@ -32,14 +38,22 @@ export class ShowcaseController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateShowcaseDto: UpdateShowcaseDto) {
-    return this.showcaseService.update(+id, updateShowcaseDto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() updateShowcaseDto: UpdateShowcaseDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.showcaseService.update(+id, updateShowcaseDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.showcaseService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.showcaseService.remove(+id);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 }

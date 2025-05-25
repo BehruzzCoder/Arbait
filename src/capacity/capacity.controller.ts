@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { CapacityService } from './capacity.service';
 import { CreateCapacityDto } from './dto/create-capacity.dto';
 import { UpdateCapacityDto } from './dto/update-capacity.dto';
 import { ApiTags, ApiQuery, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Capacity')
 @Controller('capacity')
@@ -14,8 +16,12 @@ export class CapacityController {
   @UseGuards(AuthGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new capacity' })
-  create(@Body() createCapacityDto: CreateCapacityDto) {
-    return this.capacityService.create(createCapacityDto);
+  create(@Req() req: Request, @Body() createCapacityDto: CreateCapacityDto) {
+    if (req.user?.role === UserRole.ADMIN) {
+      return this.capacityService.create(createCapacityDto);
+    } else {
+      throw new ForbiddenException('Access denied');
+    }
   }
 
   @Get()
@@ -39,15 +45,23 @@ export class CapacityController {
   @UseGuards(AuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Update capacity by ID' })
-  update(@Param('id') id: string, @Body() updateCapacityDto: UpdateCapacityDto) {
-    return this.capacityService.update(+id, updateCapacityDto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() updateCapacityDto: UpdateCapacityDto) {
+    if (req.user?.role === UserRole.ADMIN || req.user?.role === UserRole.SUPER_ADMIN) {
+      return this.capacityService.update(+id, updateCapacityDto);
+    } else {
+      throw new ForbiddenException('Access denied');
+    }
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete capacity by ID' })
-  remove(@Param('id') id: string) {
-    return this.capacityService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role === UserRole.ADMIN || req.user?.role === UserRole.SUPER_ADMIN) {
+      return this.capacityService.remove(+id);
+    } else {
+      throw new ForbiddenException('Access denied');
+    }
   }
 }

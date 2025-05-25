@@ -28,7 +28,7 @@ export class OrderService {
               count: product.count,
               quantity: product.quantity,
               measure: product.measure,
-              tools: product.tools 
+              tools: product.tools
                 ? {
                   create: product.tools.map(tool => ({
                     tool_id: tool.tool_id,
@@ -63,16 +63,16 @@ export class OrderService {
   }
 
   async assign(data: AddMastersToOrderDto) {
-  const created = await this.prisma.orderMaster.createMany({
-    data: data.master_id.map(master_id => ({
-      order_id: data.order_id,
-      master_id: master_id,
-    })),
-    skipDuplicates: true,
-  });
+    const created = await this.prisma.orderMaster.createMany({
+      data: data.master_id.map(master_id => ({
+        order_id: data.order_id,
+        master_id: master_id,
+      })),
+      skipDuplicates: true,
+    });
 
-  return {message: "assign succesfully"};
-}
+    return { message: "assign succesfully" };
+  }
 
 
 

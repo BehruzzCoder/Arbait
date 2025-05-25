@@ -20,6 +20,7 @@ import { Request } from 'express';
 import { AuthGuard } from 'src/auth/jwt.guard';
 import { ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
 import { ResendOtpUserDto } from './dto/resend-otp.dto';
+import { CreateUserYrDto } from './dto/register-userYr.dto';
 
 @Controller('user')
 export class UserController {
@@ -30,6 +31,10 @@ export class UserController {
     return this.userService.register(createUserDto);
   }
 
+  @Post('registerYr')
+  registerYr(@Body() createUserDto: CreateUserYrDto) {
+    return this.userService.registerYr(createUserDto);
+  }
   @Post('login')
   login(@Body() loginUserDto: LoginUserDto) {
     return this.userService.login(loginUserDto.email, loginUserDto.password);

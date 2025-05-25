@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+import { UserRole } from '@prisma/client';
+
 
 @Controller('contact')
 export class ContactController {
@@ -11,8 +14,12 @@ export class ContactController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createContactDto: CreateContactDto) {
-    return this.contactService.create(createContactDto);
+  create(@Req() req: Request, @Body() createContactDto: CreateContactDto) {
+    if (req.user?.role == UserRole.ADMIN) {
+      return this.contactService.create(createContactDto);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @Get()
@@ -28,14 +35,22 @@ export class ContactController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
-    return this.contactService.update(+id, updateContactDto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.contactService.update(+id, updateContactDto)
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.SUPER_ADMIN) {
+      return this.contactService.remove(+id);
+    } else {
+      throw new ForbiddenException("Access denied")
+    }
   }
 }

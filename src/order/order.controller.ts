@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { AddMastersToOrderDto } from './dto/addMasters.dto';
 
 @Controller('order')
 export class OrderController {
@@ -12,6 +13,10 @@ export class OrderController {
     return this.orderService.create(createOrderDto,2);
   }
 
+  @Post("assign")
+  assign(@Body() data:AddMastersToOrderDto ) {
+    return this.orderService.assign(data);
+  }
   @Get()
   findAll() {
     return this.orderService.findAll();

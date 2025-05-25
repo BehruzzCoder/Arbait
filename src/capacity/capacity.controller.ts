@@ -31,8 +31,8 @@ export class CapacityController {
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'sortBy', required: false, type: String })
   @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'] })
-  findAll(@Query() query: any) {
-    return this.capacityService.findAll(query);
+  findAll() {
+    return this.capacityService.findAll();
   }
 
   @Get(':id')

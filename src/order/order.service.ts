@@ -2,13 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AddMastersToOrderDto } from './dto/addMasters.dto';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreateOrderDto, user_id: number) {
-    return await this.prisma.order.create({
+    const order =  await this.prisma.order.create({
       data: {
         lat: dto.lat,
         long: dto.long,
@@ -60,9 +61,14 @@ export class OrderService {
         orderTools: true,
       },
     });
+    return order
   }
 
   async assign(data: AddMastersToOrderDto) {
+    let order_one = await this.prisma.order.findFirst({ where: { id: data.order_id } })
+    if (!order_one) {
+      throw new NotFoundException("Order not found")
+    }
     const created = await this.prisma.orderMaster.createMany({
       data: data.master_id.map(master_id => ({
         order_id: data.order_id,
@@ -71,11 +77,14 @@ export class OrderService {
       skipDuplicates: true,
     });
 
+    let updated = await this.prisma.order.update({
+      where: { id: data.order_id }, data: {
+        status: OrderStatus.PROCESSING
+      }
+    })
+
     return { message: "assign succesfully" };
   }
-
-
-
 
   async findAll() {
     return this.prisma.order.findMany({

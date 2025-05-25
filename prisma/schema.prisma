@@ -334,6 +334,7 @@ model Order {
   createdAt         DateTime       @default(now())
 }
 
+
 enum paymentType {
   CASH
   CARD

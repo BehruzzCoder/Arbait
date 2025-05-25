@@ -8,13 +8,13 @@ export class BrandService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(createBrandDto: CreateBrandDto) {
-    return this.prisma.brand.create({
-      data: createBrandDto,
-    });
+    let newBrand = await this.prisma.brand.create({ data: createBrandDto })
+    return newBrand
   }
 
   async findAll() {
-    return this.prisma.brand.findMany();
+    let data = await this.prisma.brand.findMany()
+    return data
   }
 
   async findOne(id: number) {

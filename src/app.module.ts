@@ -19,9 +19,11 @@ import { CommentModule } from './comment/comment.module';
 import { OrderModule } from './order/order.module';
 import { ToolModule } from './tool/tool.module';
 import { BrandModule } from './brand/brand.module';
+import { UploadModule } from './upload/upload.module';
+import { MeModule } from './me/me.module';
 
 @Module({
-  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule, CommentModule, OrderModule, ToolModule, BrandModule],
+  imports: [RegionModule, PrismaModule, UserModule, MailModule, LevelModule, CapacityModule, SizeModule, GeneralInfoModule, ContactModule, FaqModule, ShowcaseModule, PartnersModule, MasterModule, ProductModule, CommentModule, OrderModule, ToolModule, BrandModule, UploadModule, MeModule],
   controllers: [AppController],
   providers: [AppService],
 })

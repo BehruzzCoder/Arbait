@@ -8,7 +8,4 @@ export class CreateCommentDto {
     @ApiProperty()
     @IsNumber()
     order_id:number
-    @ApiProperty()
-    @IsNumber()
-    user_id:number
 }

@@ -72,8 +72,8 @@ export class ToolService {
   search?: string;
   price_min?: number;
   price_max?: number;
-  quantity_min?: number;
-  quantity_max?: number;
+  qauntity_min?: number;
+  qauntity_max?: number;
 }) {
   const {
     page = 1,
@@ -83,8 +83,8 @@ export class ToolService {
     search,
     price_min,
     price_max,
-    quantity_min,
-    quantity_max,
+    qauntity_min,
+    qauntity_max,
   } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -104,10 +104,10 @@ export class ToolService {
     if (price_max) where.price.lte = Number(price_max);
   }
 
-  if (quantity_min || quantity_max) {
+  if (qauntity_min || qauntity_max) {
     where.quantity = {};
-    if (quantity_min) where.quantity.gte = Number(quantity_min);
-    if (quantity_max) where.quantity.lte = Number(quantity_max);
+    if (qauntity_min) where.quantity.gte = Number(qauntity_min);
+    if (qauntity_max) where.quantity.lte = Number(qauntity_max);
   }
 
   const validSortFields = ['id', 'name', 'price', 'quantity', 'code'];

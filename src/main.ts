@@ -23,7 +23,7 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api-docs', app, documentFactory);
   await app.listen(3000);
 }
 bootstrap();

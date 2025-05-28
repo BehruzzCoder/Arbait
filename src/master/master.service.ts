@@ -115,7 +115,7 @@ export class MasterService {
 
     if (level_id !== undefined) {
       const num = Number(level_id);
-      if (isNaN(num)) throw new BadRequestException('level_id must be a number');
+      if (isNaN(num)) throw new BadRequestException('levelid must be a number');
       where.level_id = num;
     }
 

@@ -109,7 +109,7 @@ export class MasterService {
       } else if (tools === 'false' || tools === false) {
         where.tools = false;
       } else {
-        throw new BadRequestException('tools must be true or false');
+        throw new BadRequestException('tool must be true or false');
       }
     }
 

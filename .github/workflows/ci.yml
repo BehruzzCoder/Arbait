@@ -3,9 +3,11 @@ name: CI/CD to AWS Lightsail
 on:
   push:
     branches:
+      - main
       - master
   pull_request:
-    branches:   
+    branches:
+      - main
       - master
 
 jobs:
@@ -13,14 +15,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Kodni repository'dan olish
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Node.js muhitini sozlash
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      # SSH klientini o'rnatish
+      - name: Install SSH client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      # Dependensiyalarni cache qilish
       - name: Cache node modules
         uses: actions/cache@v3
         with:
@@ -29,36 +38,45 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      # Dependensiyalarni o'rnatish
       - name: Install dependencies
         run: npm install
 
+      # Prisma clientni generate qilish
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: npm run prisma:generate --verbose
 
+      # Testlarni ishga tushirish (ixtiyoriy)
       - name: Run tests
         run: npm test
-        if: failure() 
+        if: failure() # Testlar muvaffaqiyatsiz bo'lsa, pipeline to'xtamaydi
 
+      # Loyihani build qilish
       - name: Build project
-        run: npm run build
+        run: npm run build --verbose
 
+      # Lightsail'ga fayllarni ko'chirish
       - name: Deploy files to AWS Lightsail
-        uses: appleboy/scp-action@v0.1.6
+        uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.LIGHTSAIL_HOST }}
-          username: ${{ secrets.LIGHTSAIL_USER }}
+          host: ${{ secrets.LIGHTSAIL_HOST }} # Masalan: 3.79.166.67
+          username: ${{ secrets.LIGHTSAIL_USER }} # Masalan: ubuntu
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: 22
           source: 'dist/,package.json,ecosystem.config.js,prisma/'
           target: '/home/ubuntu/nestjs-app'
 
+      # Lightsail'da ilovani qayta ishga tushirish
       - name: Restart App on Lightsail via SSH
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
+            # PM2 o'rnatilganligini ta'minlash
+            npm install -g pm2 || echo "PM2 already installed"
             cd /home/ubuntu/nestjs-app
             npm install --omit=dev
             pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
+            pm2 logs nestjs-app --lines 10 # Loglarni ko'rsatish

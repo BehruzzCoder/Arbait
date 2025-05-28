@@ -44,7 +44,7 @@ jobs:
 
       # Prisma clientni generate qilish
       - name: Generate Prisma Client
-        run: npm run prisma:generate --verbose
+        run: npx prisma generate
 
       # Testlarni ishga tushirish (ixtiyoriy)
       - name: Run tests

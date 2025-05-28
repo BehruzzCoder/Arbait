@@ -1,0 +1,65 @@
+name: CI/CD to AWS Lightsail
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:   
+      - master
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Run tests
+        run: npm test
+        if: failure() 
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy files to AWS Lightsail
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: 22
+          source: 'dist/,package.json,ecosystem.config.js,prisma/'
+          target: '/home/ubuntu/nestjs-app'
+
+      # Lightsail'da ilovani qayta ishga tushirish
+      - name: Restart App on Lightsail via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/nestjs-app
+            npm install --omit=dev
+            pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js

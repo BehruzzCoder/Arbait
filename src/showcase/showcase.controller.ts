@@ -38,8 +38,6 @@ export class ShowcaseController {
     }
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get all showcases' })
   @ApiOkResponse({ description: 'List of showcases' })
   @Get()
@@ -48,7 +46,6 @@ export class ShowcaseController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get showcase by ID' })
   @ApiOkResponse({ description: 'Showcase details' })
   @ApiParam({ name: 'id', description: 'Showcase ID', type: Number })

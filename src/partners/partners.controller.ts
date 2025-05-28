@@ -37,8 +37,7 @@ export class PartnersController {
     }
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+
   @ApiOperation({ summary: 'Get all partners' })
   @ApiResponse({ status: 200, description: 'List of partners returned.' })
   @Get()
@@ -46,8 +45,7 @@ export class PartnersController {
     return this.partnersService.findAll();
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+
   @ApiOperation({ summary: 'Get partner by ID' })
   @ApiResponse({ status: 200, description: 'Partner returned.' })
   @ApiResponse({ status: 404, description: 'Partner not found.' })

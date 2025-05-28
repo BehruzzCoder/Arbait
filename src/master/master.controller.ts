@@ -82,8 +82,6 @@ export class MasterController {
   @ApiQuery({ name: 'price_daily_min', required: false, example: 1000 })
   @ApiQuery({ name: 'price_daily_max', required: false, example: 3000 })
   @ApiOkResponse({ description: 'List of masters with metadata' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   findAll(@Req() req: Request, @Query() query: MasterQueryDto) {
     if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.VIEWER_ADMIN) {
       return this.masterService.findAll(query);
@@ -97,8 +95,6 @@ export class MasterController {
   @ApiParam({ name: 'id', type: Number })
   @ApiOkResponse({ description: 'Master found' })
   @ApiNotFoundResponse({ description: 'Master not found' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   findOne(@Req() req: Request, @Param('id') id: string) {
     if (req.user?.role == UserRole.ADMIN || req.user?.role == UserRole.VIEWER_ADMIN) {
       return this.masterService.findOne(+id);

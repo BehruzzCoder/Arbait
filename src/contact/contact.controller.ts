@@ -27,34 +27,42 @@ import { UserRole } from '@prisma/client';
 @ApiTags('Contact 📞')
 @Controller('contact')
 export class ContactController {
-  constructor(private readonly contactService: ContactService) {}
+  constructor(private readonly contactService: ContactService) { }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new contact (Admin only)' })
   @ApiOkResponse({ description: 'Contact created successfully.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized or access denied.' })
-  create(@Req() req: Request, @Body() createContactDto: CreateContactDto) {
+  create(@Body() createContactDto: CreateContactDto) {
+
+    return this.contactService.create(createContactDto);
+
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get all contacts' })
+  @ApiOkResponse({ description: 'List of contacts.' })
+  @Get()
+  findAll(@Req() req: Request) {
     if (req.user?.role === UserRole.ADMIN) {
-      return this.contactService.create(createContactDto);
+      return this.contactService.findAll();
     } else {
       throw new ForbiddenException('Access denied');
     }
   }
 
-  @ApiOperation({ summary: 'Get all contacts' })
-  @ApiOkResponse({ description: 'List of contacts.' })
-  @Get()
-  findAll() {
-    return this.contactService.findAll();
-  }
-
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get contact by ID' })
   @ApiOkResponse({ description: 'Contact found.' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contactService.findOne(+id);
+  findOne(@Req() req: Request, @Param('id') id: string) {
+    if (req.user?.role === UserRole.ADMIN) {
+      return this.contactService.findOne(+id);
+    } else {
+      throw new ForbiddenException('Access denied');
+    }
   }
 
   @ApiBearerAuth()

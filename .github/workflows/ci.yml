@@ -33,7 +33,7 @@ jobs:
         run: npm install
 
       - name: Generate Prisma Client
-        run: npm run prisma:generate
+        run: npx prisma generate
 
       - name: Run tests
         run: npm test
@@ -52,7 +52,6 @@ jobs:
           source: 'dist/,package.json,ecosystem.config.js,prisma/'
           target: '/home/ubuntu/nestjs-app'
 
-      # Lightsail'da ilovani qayta ishga tushirish
       - name: Restart App on Lightsail via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:

@@ -26,6 +26,8 @@ export class RegionController {
     }
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOperation({ summary: 'Get all regions' })
   @ApiResponse({ status: 200, description: 'List of regions returned', type: [CreateRegionDto] })

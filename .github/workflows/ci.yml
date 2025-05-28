@@ -53,7 +53,7 @@ jobs:
 
       # Loyihani build qilish
       - name: Build project
-        run: npm run build --verbose
+        run: npm run build 
 
       # Lightsail'ga fayllarni ko'chirish
       - name: Deploy files to AWS Lightsail
